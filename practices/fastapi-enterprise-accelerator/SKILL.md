@@ -3,13 +3,13 @@ name: fastapi-enterprise-accelerator
 description: |
   The definitive guide for building enterprise-grade FastAPI systems. Features a clean **Layered Architecture**, "uv" package management, Pydantic v2, SQLAlchemy 2.0 Async, and complete DevOps infrastructure.
 
-  Use when: Architecting new production systems, establishing team standards, or needing production-ready patterns for Auth, Testing, Migrations, and Docker.
+  Use when: Architecting new production systems, establishing team standards, or needing production-ready references for Auth, Testing, Migrations, and Docker.
 user-invocable: true
 ---
 
 # FastAPI Enterprise Accelerator
 
-A production-ready blueprint for building scalable Python APIs. It enforces a **Standard Layered Architecture** with strict separation of concerns, combining the maintainability of Enterprise patterns with the development speed of Modern Python tooling.
+A production-ready blueprint for building scalable Python APIs. It enforces a **Standard Layered Architecture** with strict separation of concerns, combining the maintainability of Enterprise references with the development speed of Modern Python tooling.
 
 ## Key Technologies
 
@@ -23,15 +23,15 @@ A production-ready blueprint for building scalable Python APIs. It enforces a **
 
 ## 1. Project Documentation
 
-Start here. These patterns establish the structure and onboarding guide for your project.
+Start here. These references establish the structure and onboarding guide for your project.
 
 ### Project Architecture
 The folder structure explaining the **Layered Architecture** (API, Services, Repositories).
-**👉 See Reference:** `patterns/project_structure.md`
+**👉 See Reference:** `references/project_structure.md`
 
 ### Project Readme
 The standard `README.md` template containing runbooks for install, test, and deploy.
-**👉 See Reference:** `patterns/project_readme.md`
+**👉 See Reference:** `references/project_readme.md`
 
 ## 2. Core Components (The "Glue")
 
@@ -39,31 +39,31 @@ Essential files to bootstrap the application lifecycle and standard data structu
 
 ### Application Entrypoint
 The `main.py` assembling DB connection, middlewares, router aggregation, and lifespan hooks.
-**👉 See Reference:** `patterns/entrypoint.py`
+**👉 See Reference:** `references/entrypoint.py`
 
 ### Common Schemas
 Standardized Pydantic models for **Pagination** (`PagedResponse`), Errors, and Metadata.
-**👉 See Reference:** `patterns/common_schemas.py`
+**👉 See Reference:** `references/common_schemas.py`
 
-## 3. Implementation Patterns
+## 3. Implementation references
 
-Copy-paste these battle-tested patterns to build your features.
+Copy-paste these battle-tested references to build your features.
 
 ### Database Setup (Robust Async)
 Production-grade SQLAlchemy 2.0 setup with connection pooling and auto-reconnection.
-**👉 See Reference:** `patterns/database_setup.py`
+**👉 See Reference:** `references/database_setup.py`
 
 ### The Generic Repository
 A Type-Safe `BaseRepository[T]` to handle CRUD, Bulk Inserts, and Pydantic-to-DB mapping.
-**👉 See Reference:** `patterns/base_repository.py`
+**👉 See Reference:** `references/base_repository.py`
 
 ### Authentication & Security
 Complete JWT implementation supporting both **Self-Hosted** and **SaaS** (Clerk/Supabase) strategies.
-**👉 See Reference:** `patterns/auth_security.py`
+**👉 See Reference:** `references/auth_security.py`
 
 ### Global Error Handling
 Catch business logic errors and return standardized, frontend-friendly JSON responses (400/404/500).
-**👉 See Reference:** `patterns/error_handling.py`
+**👉 See Reference:** `references/error_handling.py`
 
 ## 4. Quality & Operations
 
@@ -71,15 +71,15 @@ Infrastructure to ensure code quality and stability.
 
 ### Testing Strategy
 A modern `pytest` setup separating **Unit Tests** (Mocked) from **Integration Tests** (Real DB with Transaction Rollback).
-**👉 See Reference:** `patterns/testing_strategy.py`
+**👉 See Reference:** `references/testing_strategy.py`
 
 ### Database Migrations
 Async Alembic configuration with auto-formatting hooks (`ruff`) for migration scripts.
-**👉 See Reference:** `patterns/migrations.py`
+**👉 See Reference:** `references/migrations.py`
 
 ### Deployment Infrastructure
 Dockerfile (Multi-stage), Gunicorn config (Proxy headers), and Startup Scripts.
-**👉 See Reference:** `patterns/infrastructure.yaml`
+**👉 See Reference:** `references/infrastructure.yaml`
 
 ## 5. Quick Start Checklist
 
@@ -98,23 +98,23 @@ Follow this sequence to initialize a new enterprise project:
     mkdir -p app/{api/endpoints,core,services,repositories,models,schemas} tests/{unit,integration} deploy scripts alembic
     ```
 
-3.  **Install Core Patterns** (Copy content from references):
-    *   `patterns/project_readme.md` -> `README.md`
-    *   `patterns/entrypoint.py` -> `app/main.py`
-    *   `patterns/database_setup.py` -> `app/core/database.py` (and `app/models/base.py`)
-    *   `patterns/error_handling.py` -> `app/core/exceptions.py`
-    *   `patterns/common_schemas.py` -> `app/schemas/common.py`
+3.  **Install Core references** (Copy content from references):
+    *   `references/project_readme.md` -> `README.md`
+    *   `references/entrypoint.py` -> `app/main.py`
+    *   `references/database_setup.py` -> `app/core/database.py` (and `app/models/base.py`)
+    *   `references/error_handling.py` -> `app/core/exceptions.py`
+    *   `references/common_schemas.py` -> `app/schemas/common.py`
 
 4.  **Install Data Layer**:
-    *   `patterns/base_repository.py` -> `app/repositories/base.py`
-    *   `patterns/migrations.py` -> `alembic/env.py` (and `alembic.ini`)
+    *   `references/base_repository.py` -> `app/repositories/base.py`
+    *   `references/migrations.py` -> `alembic/env.py` (and `alembic.ini`)
 
 5.  **Install Security**:
-    *   `patterns/auth_security.py` -> `app/core/security.py` (and `app/api/deps.py`)
+    *   `references/auth_security.py` -> `app/core/security.py` (and `app/api/deps.py`)
 
 6.  **Install Ops**:
-    *   `patterns/infrastructure.yaml` -> `deploy/Dockerfile` (and other deploy files)
-    *   `patterns/testing_strategy.py` -> `tests/conftest.py`
+    *   `references/infrastructure.yaml` -> `deploy/Dockerfile` (and other deploy files)
+    *   `references/testing_strategy.py` -> `tests/conftest.py`
 
 7.  **Run**:
     ```bash
