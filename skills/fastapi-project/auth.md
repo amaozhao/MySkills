@@ -1,20 +1,15 @@
 ---
-name: fastapi-auth-jwt
-description: Use when building FastAPI APIs that need authentication, either self-hosted JWT or external providers like Clerk/Supabase
+name: fastapi-auth
+description: FastAPI JWT 认证 - 本地 JWT / Clerk / Supabase / Auth0
 ---
 
 # FastAPI JWT Authentication
 
-## Overview
-**Flexible auth supporting Local JWT (self-issued) and SaaS providers (Clerk/Supabase/Auth0) with unified token validation.**
+## 概述
 
-## When to Use
-- Building APIs with Bearer token authentication
-- Supporting multiple auth providers
-- Need JWT verification without implementing login flows
-- Integrating external auth (Clerk/Supabase)
+灵活的认证支持：自托管 JWT（自己签发）和 SaaS 认证提供商（Clerk/Supabase/Auth0）。
 
-## The Pattern
+## 密码工具
 
 ```python
 # app/core/security.py
@@ -25,11 +20,14 @@ from app.core.config import settings
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
+
 def verify_password(plain: str, hashed: str) -> bool:
     return pwd_context.verify(plain, hashed)
 
+
 def get_password_hash(password: str) -> str:
     return pwd_context.hash(password)
+
 
 def create_access_token(subject: str) -> str:
     expire = datetime.utcnow() + timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
@@ -40,7 +38,7 @@ def create_access_token(subject: str) -> str:
     )
 ```
 
-## Token Validation
+## Token 验证
 
 ```python
 # app/api/deps.py
@@ -51,7 +49,8 @@ from jose import jwt, JWTError
 from app.core.exceptions import BusinessException
 from app.schemas.token import TokenPayload
 
-reusable_oauth2 = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/login")
+reusable_oauth2 = OAuth2PasswordBearer(tokenUrl="/api/auth/login")
+
 
 async def get_current_user_token(
     token: Annotated[str, Depends(reusable_oauth2)]
@@ -75,22 +74,26 @@ async def get_current_user_token(
         )
 ```
 
-## Provider Configuration
+## 提供商配置
 
-| Provider | Algorithm | SECRET_KEY |
-|----------|-----------|------------|
-| Local/Supabase | HS256 | Your JWT secret string |
+| 提供商 | 算法 | 密钥 |
+|--------|------|------|
+| 本地/Supabase | HS256 | JWT secret string |
 | Clerk/Auth0 | RS256 | PEM Public Key |
 
-## Usage
+## 使用
 
 ```python
-# Protected endpoint
+# 保护端点
 @router.get("/me")
 async def get_me(current_user: CurrentUser):
     return current_user
 ```
 
-## The Bottom Line
+---
 
-**Local = issue + verify; SaaS = verify only.**
+## 相关文件
+
+- [DI.md](./DI.md) - 依赖注入
+- [errors.md](./errors.md) - 异常处理
+- [config.md](./config.md) - 配置管理

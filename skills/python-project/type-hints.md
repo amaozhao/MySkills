@@ -1,48 +1,42 @@
 ---
 name: python-type-hints
-description: Use when writing type-safe Python code, especially with Python 3.12+ features like PEP 695 type parameters, TypedDict, Final, Self, or LiteralString
+description: Python 类型提示 - PEP 695、TypedDict、Final、Self
 ---
 
 # Python Type Hints
 
-## Overview
-**Modern Python type hints use Python 3.12+ syntax: `|` for unions, `type` for aliases, `ReadOnly`/`NotRequired` for TypedDict, `Final` for constants.**
+## 概述
 
-## When to Use
-- Writing new Python code
-- Adding type hints to existing code
-- Using TypedDict with optional/required fields
-- Defining generic functions or classes
-- Preventing accidental mutations
+现代 Python 类型提示使用 3.12+ 语法：`|` 联合类型、`type` 别名、`Final` 常量。
 
-## Modern Syntax (Python 3.10+)
+## 现代语法 (3.10+)
 
 ```python
-# Use | instead of Union
+# 使用 | 代替 Union
 def process(value: int | str) -> None: ...
 
-# Use | None instead of Optional
+# 使用 | None 代替 Optional
 name: str | None = None
 
-# List and dict types
+# List 和 dict 类型
 from collections.abc import Iterable
 prices: list[float] = []
 data: dict[str, int] = {}
 ```
 
-## PEP 695: Type Aliases
+## PEP 695: 类型别名
 
 ```python
-# Old way
+# 旧写法
 from typing import TypeAlias
 Point: TypeAlias = tuple[float, float]
 
-# New way (Python 3.12+)
+# 新写法 (Python 3.12+)
 type Point = tuple[float, float]
 type ApiResponse = dict[str, int | str]
 ```
 
-## PEP 695: Generic Functions/Classes
+## PEP 695: 泛型函数/类
 
 ```python
 def first[T](items: Iterable[T]) -> T | None:
@@ -56,22 +50,22 @@ class Container[T]:
         return self.content
 ```
 
-## TypedDict with Required/NotRequired
+## TypedDict 必选/可选
 
 ```python
 from typing import TypedDict, Required, NotRequired, ReadOnly
 
 class OrderRequest(TypedDict, total=False):
-    symbol: Required[str]      # Must be provided
-    quantity: NotRequired[int] # Optional
+    symbol: Required[str]        # 必填
+    quantity: NotRequired[int]   # 可选
     price: NotRequired[float]
 
 class Config(TypedDict):
     debug: bool
-    timeout: ReadOnly[int]     # Immutable after creation
+    timeout: ReadOnly[int]       # 创建后不可变
 ```
 
-## Final for Constants
+## Final 常量
 
 ```python
 from typing import Final
@@ -83,7 +77,7 @@ class Config:
     MAX_CONNECTIONS: Final = 100
 ```
 
-## Self Type
+## Self 类型
 
 ```python
 from typing import Self
@@ -96,19 +90,22 @@ class Node:
         return self.__class__()
 ```
 
-## LiteralString for Safe SQL
+## LiteralString 安全 SQL
 
 ```python
 from typing import LiteralString
 
 def execute_query(sql: LiteralString) -> None:
-    # Only literal strings pass type checking
+    # 只有字面量字符串通过类型检查
     ...
 
 execute_query("SELECT * FROM users")  # OK
 # execute_query(user_input)  # TypeError!
 ```
 
-## The Bottom Line
+---
 
-**Use modern type hints: `int | str`, `type Alias = ...`, `Final`, `Self`.**
+## 相关文件
+
+- [style.md](./style.md) - 代码风格
+- [new-features.md](./new-features.md) - 3.12 新特性

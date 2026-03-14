@@ -1,28 +1,22 @@
 ---
-name: fastapi-alembic-migrations
-description: Use when setting up database migrations for SQLAlchemy 2.0 async projects, or when Alembic can't connect to async database
+name: fastapi-migrations
+description: FastAPI Alembic 异步迁移配置 - auto-generate、离线迁移
 ---
 
 # FastAPI Alembic Migrations
 
-## Overview
-**SQLAlchemy 2.0 async-compatible Alembic configuration with auto-formatting and model detection.**
+## 概述
 
-## When to Use
-- Initializing migrations for async SQLAlchemy project
-- `alembic revision` fails with async engine
-- Need auto-formatting on migration files
-- Setting up new project database schema
+SQLAlchemy 2.0 兼容的 Alembic 异步迁移配置。
 
-## Setup Commands
+## 初始化
 
 ```bash
 uv run alembic init alembic
-rm alembic/env.py  # Default is synchronous!
-# Then create new env.py below
+rm alembic/env.py  # 默认是同步的！
 ```
 
-## Async Environment
+## Async env.py
 
 ```python
 # alembic/env.py
@@ -45,13 +39,15 @@ if config.config_file_name:
 config.set_main_option("sqlalchemy.url", str(settings.DATABASE_URL))
 target_metadata = Base.metadata
 
-# Import ALL models here for autogenerate!
+# 导入所有模型！
 # from app.models import user, item
+
 
 def do_run_migrations(connection):
     context.configure(connection=connection, target_metadata=target_metadata)
     with context.begin_transaction():
         context.run_migrations()
+
 
 async def run_migrations_online():
     connectable = async_engine_from_config(
@@ -63,14 +59,15 @@ async def run_migrations_online():
         await connection.run_sync(do_run_migrations)
     await connectable.dispose()
 
+
 if context.is_offline_mode():
-    # Offline logic here
+    # 离线逻辑
     pass
 else:
     asyncio.run(run_migrations_online())
 ```
 
-## Alembic.ini
+## alembic.ini
 
 ```ini
 [alembic]
@@ -87,27 +84,33 @@ entrypoint = uv run ruff format
 options = REVISION_SCRIPT_FILENAME
 ```
 
-## Daily Commands
+## 常用命令
 
 ```bash
-# Generate migration from model changes
-uv run alembic revision --autogenerate -m "describe_change"
+# 生成迁移
+uv run alembic revision --autogenerate -m "add_user_table"
 
-# Apply migrations
+# 应用迁移
 uv run alembic upgrade head
 
-# Revert
+# 回滚
 uv run alembic downgrade -1
+
+# 预览 SQL
+uv run alembic upgrade --sql +head
 ```
 
-## Common Issues
+## 常见问题
 
-| Problem | Solution |
-|---------|----------|
-| "Module not found: app" | Add `sys.path.insert()` in env.py |
-| Models not detected | Import models explicitly in env.py |
-| Migration fails | Run with `--sql` first to preview |
+| 问题 | 解决 |
+|------|------|
+| ModuleNotFoundError: app | env.py 添加 sys.path.insert |
+| 模型未检测到 | 在 env.py 显式导入所有模型 |
+| 迁移失败 | 先用 --sql 预览 |
 
-## The Bottom Line
+---
 
-**Import models, async engine, auto-format = working migrations.**
+## 相关文件
+
+- [database.md](./database.md) - 数据库配置
+- [config.md](./config.md) - 配置管理

@@ -1,20 +1,17 @@
 ---
-name: fastapi-database-async
-description: Use when setting up SQLAlchemy 2.0 async database connections, connection pooling, or production-ready database configuration in FastAPI
+name: fastapi-database
+description: FastAPI 异步数据库配置 - SQLAlchemy 2.0、连接池、Pydantic v2 兼容
 ---
 
-# FastAPI Async Database Setup
+# FastAPI Async Database
 
-## Overview
-**Production-grade async SQLAlchemy 2.0 setup with connection pooling, health checks, and Pydantic v2 compatibility.**
+## 概述
 
-## When to Use
-- Setting up new FastAPI project with async database
-- Configuring connection pool for production
-- Using SQLAlchemy 2.0 with asyncpg
-- Need `expire_on_commit=False` for Pydantic v2
+生产级异步 SQLAlchemy 2.0 配置，包含连接池优化和 Pydantic v2 兼容性。
 
-## The Pattern
+## 核心配置
+
+### 异步 Engine
 
 ```python
 # app/core/database.py
@@ -39,6 +36,7 @@ AsyncSessionLocal = async_sessionmaker(
     expire_on_commit=False,
 )
 
+
 async def get_db() -> AsyncGenerator[AsyncSession]:
     async with AsyncSessionLocal() as session:
         try:
@@ -48,6 +46,26 @@ async def get_db() -> AsyncGenerator[AsyncSession]:
             raise
         finally:
             await session.close()
+```
+
+### 配置自动转换 Driver
+
+```python
+# app/core/config.py
+from typing import Annotated
+from pydantic_settings import BaseSettings
+from pydantic import Field, BeforeValidator
+
+def ensure_async_driver(v: str | None) -> str:
+    if isinstance(v, str) and v.startswith("postgresql://"):
+        return v.replace("postgresql://", "postgresql+asyncpg://", 1)
+    return v or ""
+
+AsyncPostgresDsn = Annotated[str, BeforeValidator(ensure_async_driver)]
+
+class Settings(BaseSettings):
+    DATABASE_URL: AsyncPostgresDsn
+    DEBUG: bool = False
 ```
 
 ## Base Model
@@ -78,36 +96,35 @@ class TimestampMixin(MappedAsDataclass):
     )
 ```
 
-## Config with Auto-Driver
+## 连接池配置
+
+| 参数 | 默认值 | 说明 |
+|------|--------|------|
+| `pool_size=20` | 5 | 保持的连接数 |
+| `max_overflow=10` | 10 | 额外连接数 |
+| `pool_recycle=3600` | - | 连接回收时间（1小时） |
+| `pool_pre_ping=True` | False | 使用前检查连接 |
+| `pool_use_lifo=True` | False | LIFO 复用热连接 |
+
+## Pydantic v2 兼容性
+
+关键设置：`expire_on_commit=False`
 
 ```python
-# app/core/config.py
-from typing import Annotated
-from pydantic_settings import BaseSettings
-from pydantic import Field, BeforeValidator
-
-def ensure_async_driver(v: str | None) -> str:
-    if isinstance(v, str) and v.startswith("postgresql://"):
-        return v.replace("postgresql://", "postgresql+asyncpg://", 1)
-    return v or ""
-
-AsyncPostgresDsn = Annotated[str, BeforeValidator(ensure_async_driver)]
-
-class Settings(BaseSettings):
-    DATABASE_URL: AsyncPostgresDsn
-    DEBUG: bool = False
-
-settings = Settings()
+AsyncSessionLocal = async_sessionmaker(
+    bind=engine,
+    class_=AsyncSession,
+    expire_on_commit=False,  # 关键！
+)
 ```
 
-## Key Settings
+这防止 Pydantic v2 访问已分离对象时报错。
 
-| Setting | Value | Purpose |
-|---------|-------|---------|
-| `pool_pre_ping=True` | Health check | Prevents stale connections |
-| `pool_use_lifo=True` | LIFO | Reuses hot connections first |
-| `expire_on_commit=False` | Pydantic v2 | Prevents detached object errors |
+---
 
-## The Bottom Line
+## 相关文件
 
-**Async engine + session factory + proper config = reliable database layer.**
+- [config.md](./config.md) - 配置管理
+- [migrations.md](./migrations.md) - 数据库迁移
+- [DI.md](./DI.md) - 依赖注入
+- [architecture.md](./architecture.md) - 分层架构

@@ -1,24 +1,18 @@
 ---
-name: python-error-handling
-description: Use when writing error handling code in Python, especially with custom exception hierarchies, exception chaining, exception groups, or context managers
+name: python-errors
+description: Python 错误处理 - 异常层次、链式异常、ExceptionGroup
 ---
 
 # Python Error Handling
 
-## Overview
-**Python error handling best practices: specific exceptions, custom hierarchies, exception chaining, notes for context, and context managers for cleanup.**
+## 概述
 
-## When to Use
-- Writing try/except blocks
-- Creating custom exceptions
-- Handling multiple exceptions
-- Adding context to errors
-- Resource cleanup
+Python 错误处理最佳实践：具体异常、自定义层次、异常链、context manager。
 
-## Be Specific with Exceptions
+## 使用具体异常
 
 ```python
-# Good: Specific exceptions
+# 好：具体异常
 try:
     await connection.execute(query)
 except OSError as err:
@@ -26,36 +20,36 @@ except OSError as err:
 except ValueError as err:
     logger.error(f"Invalid data format: {err}")
 
-# Bad: Too broad
+# 不好：太宽泛
 except Exception:
     pass
 ```
 
-## Custom Exception Hierarchy
+## 自定义异常层次
 
 ```python
 class AppError(Exception):
-    """Base exception for application errors."""
+    """应用错误基类。"""
     pass
 
 class ValidationError(AppError):
-    """Validation-related errors."""
+    """验证相关错误。"""
     pass
 
 class DatabaseError(AppError):
-    """Database-related errors."""
+    """数据库相关错误。"""
     pass
 
 class NotFoundError(DatabaseError):
-    """Resource not found."""
+    """资源未找到。"""
     pass
 
-# Usage
+# 使用
 if not user:
     raise NotFoundError(f"User {user_id} not found")
 ```
 
-## Exception Chaining
+## 异常链
 
 ```python
 try:
@@ -64,7 +58,7 @@ except OrderError as exc:
     raise OrderProcessingError(f"Failed {order_id}") from exc
 ```
 
-## Exception Groups (Python 3.11+)
+## Exception Group (Python 3.11+)
 
 ```python
 try:
@@ -75,7 +69,7 @@ except ExceptionGroup as eg:
         print(f"  - {e}")
 ```
 
-## Adding Context with Notes (Python 3.11+)
+## 添加上下文 (Python 3.11+)
 
 ```python
 try:
@@ -86,14 +80,14 @@ except ValidationError as e:
     raise
 ```
 
-## Context Managers for Resources
+## 资源清理
 
 ```python
-# Good: Automatic cleanup
+# 好：自动清理
 async with await get_connection() as conn:
     await conn.execute(query)
 
-# Or with contextlib
+# 或使用 contextlib
 from contextlib import asynccontextmanager
 
 @asynccontextmanager
@@ -105,7 +99,7 @@ async def managed_file(path):
         await f.close()
 ```
 
-## Logging Best Practices
+## 日志最佳实践
 
 ```python
 import logging
@@ -114,11 +108,14 @@ logger = logging.getLogger(__name__)
 try:
     risky_operation()
 except SpecificError as e:
-    logger.error(f"Operation failed: {e}", exc_info=True)  # Stack trace
+    logger.error(f"Operation failed: {e}", exc_info=True)  # 堆栈跟踪
 except AnotherError as e:
-    logger.warning(f"Expected failure: {e}")  # No stack trace
+    logger.warning(f"Expected failure: {e}")  # 无堆栈
 ```
 
-## The Bottom Line
+---
 
-**Be specific, chain exceptions, add context, use context managers.**
+## 相关文件
+
+- [async.md](./async.md) - 异步编程
+- [principles.md](./principles.md) - 设计原则

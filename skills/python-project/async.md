@@ -1,19 +1,13 @@
 ---
-name: python-async-patterns
-description: Use when writing async Python code with asyncio, including TaskGroups, rate limiting, timeouts, context managers, or concurrent task execution
+name: python-async
+description: Python 异步编程 - asyncio、TaskGroups、Semaphore、timeout
 ---
 
 # Python Async Patterns
 
-## Overview
-**Python async patterns using asyncio: TaskGroups for error handling, semaphores for rate limiting, timeouts, and proper context lifecycle management.**
+## 概述
 
-## When to Use
-- Writing async/await code
-- Running concurrent tasks
-- Need rate limiting
-- Handling timeouts
-- Managing async resources
+Python asyncio 异步模式：TaskGroups 错误处理、Semaphore 限流、timeout 超时控制。
 
 ## Task Groups (Python 3.11+)
 
@@ -22,12 +16,12 @@ async def process_all(orders: list[Order]) -> list[Result]:
     async with asyncio.TaskGroup() as tg:
         tasks = [tg.create_task(process_order(o)) for o in orders]
 
-    # Collect results, raise on first exception
+    # 收集结果，一个异常则全部失败
     results = [t.result() for t in tasks]
     return [r for r in results if not isinstance(r, Exception)]
 ```
 
-## Concurrent Execution
+## 并发执行
 
 ```python
 async def fetch_all_prices(symbols: list[str]) -> dict[str, float]:
@@ -36,7 +30,7 @@ async def fetch_all_prices(symbols: list[str]) -> dict[str, float]:
     return dict(zip(symbols, results))
 ```
 
-## Rate Limiting with Semaphore
+## Semaphore 限流
 
 ```python
 class RateLimiter:
@@ -52,12 +46,12 @@ class RateLimiter:
     async def __aexit__(self, *args):
         pass
 
-# Usage
-async with RateLimiter(10, 0.1):  # 10 concurrent, 0.1s between
+# 使用
+async with RateLimiter(10, 0.1):  # 10并发，0.1秒间隔
     await fetch_price("BTC")
 ```
 
-## Timeout Handling
+## Timeout 处理
 
 ```python
 from asyncio import timeout, TimeoutError
@@ -71,7 +65,7 @@ async def fetch_with_timeout(symbol: str, timeout_sec: float = 5.0):
         return None
 ```
 
-## Async Context Manager
+## 异步上下文管理器
 
 ```python
 class Connection:
@@ -82,12 +76,12 @@ class Connection:
     async def __aexit__(self, exc_type, exc_val, exc_tb):
         await self.conn.close()
 
-# Usage
+# 使用
 async with Connection() as conn:
     await conn.execute(query)
 ```
 
-## Contextlib asynccontextmanager
+## asynccontextmanager
 
 ```python
 from contextlib import asynccontextmanager
@@ -100,20 +94,23 @@ async def managed_resource():
     finally:
         await resource.release()
 
-# Usage
+# 使用
 async with managed_resource() as r:
     await r.execute()
 ```
 
-## Common Mistakes
+## 常见错误
 
-| Mistake | Fix |
-|---------|-----|
-| `time.sleep()` in async | Use `asyncio.sleep()` |
-| Forgetting `await` | Check all IO operations |
-| No timeout | Wrap with `asyncio.timeout()` |
-| Too many concurrent | Use `asyncio.Semaphore` |
+| 错误 | 修复 |
+|------|------|
+| async 中使用 time.sleep() | 使用 asyncio.sleep() |
+| 忘记 await | 检查所有 IO 操作 |
+| 无超时控制 | 使用 asyncio.timeout() |
+| 并发过高 | 使用 asyncio.Semaphore |
 
-## The Bottom Line
+---
 
-**Use TaskGroup for error handling, Semaphore for rate limiting, timeout for safety.**
+## 相关文件
+
+- [structure.md](./structure.md) - 项目结构
+- [errors.md](./errors.md) - 错误处理

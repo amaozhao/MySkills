@@ -1,20 +1,15 @@
 ---
-name: fastapi-testing-strategy
-description: Use when testing FastAPI APIs that need database isolation, mocking strategies, or split unit/integration test workflows
+name: fastapi-testing
+description: FastAPI 测试策略 - 单元测试(mock)、集成测试(transaction rollback)
 ---
 
 # FastAPI Testing Strategy
 
-## Overview
-**Split-layer testing: mocked unit tests for logic, transaction-rolled-back integration tests for API-DB roundtrips.**
+## 概述
 
-## When to Use
-- Writing tests for FastAPI endpoints
-- Need clean database state between tests
-- Separating business logic tests from API tests
-- Using pytest-asyncio with async database
+分层测试：单元测试 mock 仓库，集成测试使用事务回滚保证数据库隔离。
 
-## Pytest Config
+## Pytest 配置
 
 ```toml
 # pyproject.toml
@@ -24,8 +19,8 @@ asyncio_default_fixture_loop_scope = "session"
 testpaths = ["tests"]
 python_files = "test_*.py"
 markers = [
-    "unit: pure logic tests",
-    "integration: end-to-end tests",
+    "unit: 纯逻辑测试",
+    "integration: 端到端测试",
 ]
 ```
 
@@ -38,6 +33,7 @@ from httpx import AsyncClient, ASGITransport
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
 from app.main import app
 from app.core.database import get_db, Base
+from app.core.config import settings
 
 TEST_DATABASE_URL = str(settings.DATABASE_URL)
 engine = create_async_engine(TEST_DATABASE_URL, echo=False)
@@ -49,6 +45,7 @@ TestingSessionLocal = async_sessionmaker(
     autoflush=False,
 )
 
+
 @pytest.fixture(scope="session", autouse=True)
 async def setup_db():
     async with engine.begin() as conn:
@@ -57,6 +54,7 @@ async def setup_db():
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.drop_all)
     await engine.dispose()
+
 
 @pytest.fixture(scope="function")
 async def db():
@@ -68,18 +66,16 @@ async def db():
     await transaction.rollback()
     await connection.close()
 
+
 @pytest.fixture(scope="function")
 async def client(db: AsyncSession):
     app.dependency_overrides[get_db] = lambda: db
-    async with AsyncClient(
-        transport=ASGITransport(app=app),
-        base_url="http://test"
-    ) as ac:
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
         yield ac
     app.dependency_overrides.clear()
 ```
 
-## Unit Test (Mocked)
+## 单元测试（Mock）
 
 ```python
 # tests/services/test_user.py
@@ -89,25 +85,31 @@ from app.services.user import UserService
 from app.schemas.user import UserCreate
 from app.core.exceptions import BusinessException
 
+
 @pytest.mark.asyncio
 async def test_create_user_success():
+    # Mock Repository
     mock_repo = AsyncMock()
     mock_repo.get_by_email.return_value = None
     mock_repo.create.return_value = MagicMock(id=1, email="test@test.com")
 
+    # 创建 Service 并注入 mock
     service = UserService(AsyncMock())
     service.repo = mock_repo
 
+    # 执行
     result = await service.create_user(UserCreate(email="test@test.com", password="pass"))
 
+    # 断言
     assert result.email == "test@test.com"
     mock_repo.create.assert_called_once()
     mock_db.commit.assert_called_once()
 
+
 @pytest.mark.asyncio
 async def test_create_user_duplicate():
     mock_repo = AsyncMock()
-    mock_repo.get_by_email.return_value = True
+    mock_repo.get_by_email.return_value = True  # 已存在
 
     service = UserService(AsyncMock())
     service.repo = mock_repo
@@ -118,7 +120,7 @@ async def test_create_user_duplicate():
     assert exc.value.code == "USER_ALREADY_EXISTS"
 ```
 
-## Integration Test (Real DB)
+## 集成测试（真实 DB）
 
 ```python
 # tests/api/test_users.py
@@ -127,23 +129,32 @@ from httpx import AsyncClient
 from sqlalchemy import select
 from app.models.user import User
 
+
 @pytest.mark.asyncio
 async def test_create_user_api(client: AsyncClient, db: AsyncSession):
-    resp = await client.post("/api/users", json={"email": "test@test.com", "password": "pass"})
+    # 调用 API
+    resp = await client.post("/api/users", json={
+        "email": "test@test.com",
+        "password": "pass"
+    })
     assert resp.status_code == 200
 
-    # Verify DB state
+    # 验证数据库状态
     result = await db.execute(select(User).where(User.email == "test@test.com"))
     assert result.scalars().first() is not None
 ```
 
-## Test Layering
+## 测试分层
 
-| Layer | Fixture | Isolation | Purpose |
-|-------|---------|-----------|---------|
-| Unit | `mock_repo` | Mocked DB | Test business logic |
-| Integration | `client + db` | Transaction rollback | Test API-DB roundtrip |
+| 层级 | Fixture | 隔离方式 | 用途 |
+|------|---------|---------|------|
+| 单元 | mock_repo | Mock | 测试业务逻辑 |
+| 集成 | client + db | 事务回滚 | 测试 API-DB 往返 |
 
-## The Bottom Line
+---
 
-**Unit tests mock the repo; integration tests use transaction rollback.**
+## 相关文件
+
+- [architecture.md](./architecture.md) - 分层架构
+- [errors.md](./errors.md) - 异常处理
+- [DI.md](./DI.md) - 依赖注入
