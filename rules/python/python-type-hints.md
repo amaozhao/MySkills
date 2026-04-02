@@ -1,6 +1,7 @@
 ---
 name: python-type-hints
 description: Python 类型提示 - PEP 695、TypedDict、Final、Self
+paths: **/*.py
 ---
 
 # Python Type Hints

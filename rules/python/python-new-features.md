@@ -1,6 +1,7 @@
 ---
 name: python-new-features
 description: Python 3.12 新特性 - f-string、类型参数、推导式内联
+paths: **/*.py
 ---
 
 # Python 3.12 New Features

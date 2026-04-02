@@ -1,6 +1,7 @@
 ---
 name: python-structure
 description: Python 项目结构 - src-layout、pyproject.toml、导入问题
+paths: **/*.py
 ---
 
 # Python Project Structure

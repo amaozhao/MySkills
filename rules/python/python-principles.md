@@ -1,6 +1,7 @@
 ---
 name: python-principles
 description: Python 设计原则 - DRY、KISS、YAGNI、组合优于继承
+paths: **/*.py
 ---
 
 # Python Design Principles

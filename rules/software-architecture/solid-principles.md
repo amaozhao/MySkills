@@ -1,6 +1,7 @@
 ---
 name: solid-principles
 description: 设计 Python 类层次结构、接口或模块边界 - 当代码难以扩展、修改，或修改导致级联 bug 时使用
+paths: **/*.py
 ---
 
 # SOLID 原则

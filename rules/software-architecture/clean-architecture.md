@@ -1,6 +1,7 @@
 ---
 name: clean-architecture
 description: 项目架构设计、分层组织、依赖倒置、代码可测试性和可维护性
+paths: **/*.py
 ---
 
 # 整洁架构

@@ -1,6 +1,7 @@
 ---
 name: python-testing
 description: Python 单元测试 - pytest、fixtures、mock、async 测试
+paths: **/*.py
 ---
 
 # Python Unit Testing

@@ -1,6 +1,7 @@
 ---
 name: python-errors
 description: Python 错误处理 - 异常层次、链式异常、ExceptionGroup
+paths: **/*.py
 ---
 
 # Python Error Handling

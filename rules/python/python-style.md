@@ -1,6 +1,7 @@
 ---
 name: python-style
 description: Python 代码风格 - PEP 8、docstring、pythonic 模式
+paths: **/*.py
 ---
 
 # Python Code Style

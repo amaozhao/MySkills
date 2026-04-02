@@ -1,6 +1,7 @@
 ---
 name: python-async
 description: Python 异步编程 - asyncio、TaskGroups、Semaphore、timeout
+paths: **/*.py
 ---
 
 # Python Async Patterns
